@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chat room</title>
+  </head>
+
+  <body>
+    <div id="error-container"></div>
+    <h3>Login</h3>
+    <input id="username" type="text" value="" placeholder="Enter username">
+    <button type="submit" name="button" onclick="setUsername()">Join</button>
+
+  </body>
+
+  <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+      let user;
+
+      function setUsername() {
+        socket.emit('setUsername', { username: document.getElementById('username').value });
+      }
+
+      function sendMessage() {
+        const msg = document.getElementById('message').value;
+        socket.emit('sendMessage', { message: msg, user: user });
+      }
+
+      socket.on('chat', (data) => {
+        user = data.username;
+        document.body.innerHTML = '<h3>Message</h3>\
+        <div id="error-container"></div>\
+        <input id = "message" type = "text" value="" placeholder = "Type message">\
+        <button type = "submit" name = "button" onclick = "sendMessage()">\
+            Send\
+        </button>\
+        <div id="message-container"></div> ';
+      });
+
+      socket.on('userMessage', (data) => {
+        const messageContainer = document.getElementById('message-container');
+        messageContainer.innerHTML += '<div><b>' + data.user + '</b>: ' + data.message + '</div>';
+      });
+
+      socket.on('emptyChat', (data) => {
+        document.getElementById('error-container').innerHTML = data;
+      })
+    </script>
+</html>
